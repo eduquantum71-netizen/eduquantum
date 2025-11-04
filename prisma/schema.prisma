@@ -10,6 +10,7 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+
 // --- Model untuk Pengguna ---
 // Model ini menyimpan data akun pengguna yang mendaftar melalui formulir karir
 model User {
