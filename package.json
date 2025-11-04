@@ -3,7 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "prisma": {
-    "seed": "s-node --compiler-options {\"module\":\"CommonJS\"} prisma/seed.ts"
+    "seed": "prisma/seed.ts"
   },
   "scripts": {
     "dev": "nodemon --exec \"npx tsx server.ts\" --watch server.ts --watch src --ext ts,tsx,js,jsx 2>&1 | tee dev.log",
