@@ -2,7 +2,16 @@
 
 import { PrismaClient } from '@prisma/client';
 
-const prisma = new PrismaClient();
+// PERBAIKAN: Inisialisasi Prisma Client dengan URL langsung (non-pooling).
+// Ini lebih cepat dan aman untuk operasi seeding (menulis banyak data sekaligus)
+// karena tidak melewati connection pooler.
+const prisma = new PrismaClient({
+  datasources: {
+    db: {
+      url: process.env.POSTGRES_URL_NON_POOLING,
+    },
+  },
+});
 
 // Data program yang akan diisi ke database
 const programs = [
@@ -83,28 +92,16 @@ const programs = [
 async function main() {
   console.log('Start seeding...');
 
-  for (const program of programs) {
-    await prisma.program.upsert({
+  // Menggunakan Promise.all untuk menjalankan semua upsert secara paralel (lebih cepat)
+  const seedingPromises = programs.map(program =>
+    prisma.program.upsert({
       where: { id: program.id },
-      update: {
-        name: program.name,
-        category: program.category,
-        description: program.description,
-        price: program.price,
-        duration: program.duration,
-        features: program.features,
-      },
-      create: {
-        id: program.id,
-        name: program.name,
-        category: program.category,
-        description: program.description,
-        price: program.price,
-        duration: program.duration,
-        features: program.features,
-      },
-    });
-  }
+      update: program,
+      create: program,
+    })
+  );
+
+  await Promise.all(seedingPromises);
 
   console.log('Seeding finished.');
 }
