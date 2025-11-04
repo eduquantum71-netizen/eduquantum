@@ -1,9 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { db } from '@/lib/db'
+import prisma from '@/lib/prisma'
 
 export async function GET() {
   try {
-    const pengajars = await db.pengajar.findMany({
+    const pengajars = await prisma.pengajar.findMany({
       include: {
         programs: {
           include: {
@@ -38,7 +38,7 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    const pengajar = await db.pengajar.create({
+    const pengajar = await prisma.pengajar.create({
       data: {
         name,
         photo: photo || null,

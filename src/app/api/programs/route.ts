@@ -1,9 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { db } from '@/lib/db'
+import prisma from '@/lib/prisma'
 
 export async function GET() {
   try {
-    const programs = await db.program.findMany({
+    const programs = await prisma.program.findMany({
       orderBy: {
         createdAt: 'desc'
       }
@@ -31,7 +31,7 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    const program = await db.program.create({
+    const program = await prisma.program.create({
       data: {
         name,
         category,

@@ -1,12 +1,12 @@
 // File: src/app/api/pendaftaran/route.ts
 
 import { NextRequest, NextResponse } from 'next/server'
-import { db } from '@/lib/db' // Pastikan file ini ada
+import prisma from '@/lib/prisma' // Pastikan file ini ada
 import { googleSheetsService } from '@/lib/google-sheets' // Import service Google Sheets
 
 export async function GET() {
   try {
-    const pendaftarans = await db.pendaftaran.findMany({
+    const pendaftarans = await prisma.pendaftaran.findMany({
       include: {
         program: true
       },
@@ -58,7 +58,7 @@ export async function POST(request: NextRequest) {
     }
 
     // 1. SIMPAN DATA KE DATABASE (PRISMA)
-    const pendaftaran = await db.pendaftaran.create({
+    const pendaftaran = await prisma.pendaftaran.create({
       data: {
         namaPanggilan,
         namaLengkap,

@@ -1,10 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { db } from '@/lib/db'
+import prisma from '@/lib/prisma'
 import { googleSheetsService } from '@/lib/google-sheets'
 
 export async function GET() {
   try {
-    const karirApplications = await db.karir.findMany({
+    const karirApplications = await prisma.karir.findMany({
       orderBy: {
         createdAt: 'desc'
       }
@@ -43,7 +43,7 @@ export async function POST(request: NextRequest) {
     }
     
     // Check if user already exists
-    const existingUser = await db.user.findUnique({
+    const existingUser = await prisma.user.findUnique({
       where: { email }
     })
     
@@ -53,7 +53,7 @@ export async function POST(request: NextRequest) {
       userId = existingUser.id
     } else {
       // Create new user
-      const newUser = await db.user.create({
+      const newUser = await prisma.user.create({
         data: {
           email,
           name,
@@ -72,7 +72,7 @@ export async function POST(request: NextRequest) {
     }
     
     // Create career application
-    const karir = await db.karir.create({
+    const karir = await prisma.karir.create({
       data: {
         name,
         email,

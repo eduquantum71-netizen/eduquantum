@@ -1,9 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { db } from '@/lib/db'
+import prisma from '@/lib/prisma'
 
 export async function GET() {
   try {
-    const kontakMessages = await db.kontak.findMany({
+    const kontakMessages = await prisma.kontak.findMany({
       orderBy: {
         createdAt: 'desc'
       }
@@ -31,7 +31,7 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    const kontak = await db.kontak.create({
+    const kontak = await prisma.kontak.create({
       data: {
         name,
         email,
