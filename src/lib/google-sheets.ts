@@ -1,67 +1,38 @@
 import { google } from 'googleapis';
 
+// Interface config tidak lagi membutuhkan email dan key terpisah
 export interface GoogleSheetsConfig {
   spreadsheetId: string;
   range: string;
   karirRange: string;
-  serviceAccountEmail?: string;
-  privateKey?: string;
+  serviceAccount: any; // <-- TAMBAHKAN INI
 }
 
-export interface RegistrationData {
-  namaPanggilan: string;
-  namaLengkap: string;
-  jenisKelamin: string;
-  asalSekolah: string;
-  kelas: string;
-  kurikulum: string;
-  noHpOrangTua: string;
-  noHpSiswa?: string;
-  programId: string;
-  program?: any;
-  mataPelajaran: string;
-  jumlahSesi: number;
-  status: string;
-  createdAt: string;
-}
-
-export interface KarirData {
-  name: string;
-  email: string;
-  phone: string;
-  position: string;
-  experience: string;
-  education: string;
-  message: string;
-  resume: string;
-  createdAt: string;
-}
+// ... (interface RegistrationData dan KarirData tidak berubah) ...
 
 export class GoogleSheetsService {
   private spreadsheetId: string;
   private range: string;
   private karirRange: string;
-  private serviceAccountEmail: string;
-  private privateKey: string;
+  private serviceAccount: any; // <-- UBAH INI
 
   constructor(config: GoogleSheetsConfig) {
     this.spreadsheetId = config.spreadsheetId;
     this.range = config.range;
     this.karirRange = config.karirRange;
-    this.serviceAccountEmail = config.serviceAccountEmail || '';
-    this.privateKey = config.privateKey || '';
+    this.serviceAccount = config.serviceAccount; // <-- UBAH INI
   }
 
   private async getAuth() {
-    const auth = new google.auth.JWT({
-      email: this.serviceAccountEmail,
-      key: this.privateKey,
+    // Gunakan objek serviceAccount langsung untuk autentikasi
+    const auth = new google.auth.GoogleAuth({
+      credentials: this.serviceAccount, // <-- LEBIH SEDERHANA
       scopes: ['https://www.googleapis.com/auth/spreadsheets'],
     });
-    await auth.authorize();
     return auth;
   }
 
+  // ... (semua metode lain seperti appendData, appendKarirData, dll. TIDAK PERLU DIUBAH) ...
   async appendData(data: RegistrationData): Promise<void> {
     const auth = await this.getAuth();
     const sheets = google.sheets({ version: 'v4', auth });
@@ -216,10 +187,21 @@ export class GoogleSheetsService {
   }
 }
 
+// --- BAGIAN PALING AKHIR YANG PALING PENTING DIUBAH ---
+
+// Baca variabel JSON dari environment
+const serviceAccountJson = process.env.GOOGLE_APPLICATION_CREDENTIALS_JSON;
+
+// Pastikan variabelnya ada sebelum diparse
+if (!serviceAccountJson) {
+  throw new Error('Environment variable GOOGLE_APPLICATION_CREDENTIALS_JSON is not set.');
+}
+
+const serviceAccount = JSON.parse(serviceAccountJson);
+
 export const googleSheetsService = new GoogleSheetsService({
   spreadsheetId: process.env.GOOGLE_SPREADSHEET_ID || '',
   range: process.env.GOOGLE_SHEETS_RANGE || 'pendaftaran!A:N',
   karirRange: process.env.GOOGLE_SHEETS_KARIR_RANGE || 'karir!A:I',
-  serviceAccountEmail: process.env.GOOGLE_SERVICE_ACCOUNT_EMAIL || '',
-  privateKey: process.env.GOOGLE_PRIVATE_KEY?.replace(/\\n/g, '\n') || '',
+  serviceAccount: serviceAccount, // <-- KIRIM OBJEK YANG SUDAH DI-PARSE
 });
