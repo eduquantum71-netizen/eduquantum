@@ -2,7 +2,6 @@
 
 import { NextRequest, NextResponse } from 'next/server'
 import prisma from '@/lib/prisma' // Pastikan file ini ada
-import { googleSheetsService } from '@/lib/google-sheets' // Import service Google Sheets
 
 export async function GET() {
   try {
