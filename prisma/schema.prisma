@@ -10,78 +10,6 @@ datasource db {
   provider = "postgresql" // PASTIKAN INI ADALAH "postgresql"
   url      = env("DATABASE_URL")
 }
-
-
-// --- Model untuk Pengguna ---
-// Model ini menyimpan data akun pengguna yang mendaftar melalui formulir karir
-model User {
-  id        String   @id @default(cuid())
-  email     String   @unique // Email harus unik untuk setiap pengguna
-  name      String
-  phone     String?
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-  
-  // Relasi: Satu user bisa memiliki banyak lamaran karir
-  karirApplications Karir[]
-}
-
-// --- Model untuk Program Kursus ---
-model Program {
-  id          String @id @default(cuid())
-  name        String
-  category    String
-  description String
-  price       Int
-  duration    String
-  features    String
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-  
-  // Relasi ke model lain
-  pendaftarans Pendaftaran[]
-  pengajars    PengajarProgram[]
-}
-
-// --- Model untuk Data Pengajar ---
-model Pengajar {
-  id           String @id @default(cuid())
-  name         String
-  photo        String?
-  qualification String
-  specialization String
-  experience   String
-  email        String
-  phone        String
-  createdAt    DateTime @default(now())
-  updatedAt    DateTime @updatedAt
-  
-  // Relasi ke model lain
-  programs PengajarProgram[]
-}
-
-// --- Model Tabel Penghubung (Junction Table) antara Pengajar dan Program ---
-model PengajarProgram {
-  id         String @id @default(cuid())
-  pengajarId String
-  programId  String
-  
-  pengajar Pengajar @relation(fields: [pengajarId], references: [id], onDelete: Cascade)
-  program  Program  @relation(fields: [programId], references: [id], onDelete: Cascade)
-}
-
-// --- Model untuk Testimoni Siswa ---
-model Testimoni {
-  id        String @id @default(cuid())
-  name      String
-  role      String
-  content   String
-  rating    Int
-  photo     String?
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-}
-
 // --- Model untuk Data Pendaftaran Siswa Baru ---
 model Pendaftaran {
   id                   String @id @default(cuid())
@@ -100,20 +28,7 @@ model Pendaftaran {
   createdAt            DateTime @default(now())
   updatedAt            DateTime @updatedAt
   
-  // Relasi ke model Program
-  program Program @relation(fields: [programId], references: [id])
-}
 
-// --- Model untuk Pesan dari Formulir Kontak ---
-model Kontak {
-  id        String @id @default(cuid())
-  name      String
-  email     String
-  phone     String?
-  subject   String
-  message   String
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
 }
 
 // --- Model untuk Lamaran Karir ---
@@ -131,6 +46,4 @@ model Karir {
   createdAt  DateTime @default(now())
   updatedAt  DateTime @updatedAt
   
-  // Relasi ke model User
-  user User? @relation(fields: [userId], references: [id])
 }
