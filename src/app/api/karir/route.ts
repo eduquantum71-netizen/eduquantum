@@ -86,6 +86,23 @@ export async function POST(request: NextRequest) {
       }
     })
     
+    // Also save to Google Sheets
+    try {
+      await googleSheetsService.appendKarirData({
+        name,
+        email,
+        phone,
+        position,
+        experience: experience || '',
+        education: education || '',
+        message: message || '',
+        resume: resumeUrl,
+        createdAt: new Date().toISOString()
+      })
+    } catch (sheetsError) {
+      console.error('Error saving to Google Sheets:', sheetsError)
+      // Continue even if Google Sheets fails
+    }
     
     return NextResponse.json(karir, { status: 201 })
   } catch (error) {
