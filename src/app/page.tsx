@@ -35,7 +35,7 @@ export default function Home() {
                 <BookOpen className="w-5 h-5 text-white" />
               </div>
               <span className="text-xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
-                EduQuantum
+                EdQuantum
               </span>
             </div>
 
@@ -166,7 +166,7 @@ export default function Home() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center space-y-4 mb-16">
             <h2 className="text-3xl md:text-4xl font-bold text-gray-900">
-              Mengapa Memilih EduQuantum?
+              Mengapa Memilih EdQuantum?
             </h2>
             <p className="text-xl text-gray-600 max-w-3xl mx-auto">
               Kami menyediakan layanan les privat berkualitas dengan berbagai keunggulan untuk mendukung kesuksesan pendidikan Anda
@@ -286,10 +286,10 @@ export default function Home() {
             <div className="space-y-4">
               <h4 className="font-semibold">Layanan</h4>
               <ul className="space-y-2 text-gray-400">
-                <li><Link href="/program" className="hover:text-white transition-colors">Les Reguler</Link></li>
-                <li><Link href="/program" className="hover:text-white transition-colors">Les Nasional Plus</Link></li>
-                <li><Link href="/program" className="hover:text-white transition-colors">Preparasi Olimpiade</Link></li>
-                <li><Link href="/program" className="hover:text-white transition-colors">Preparasi UTBK</Link></li>
+                <li><Link href="/program" className="hover:text-white transition-colors">Reguler</Link></li>
+                <li><Link href="/program" className="hover:text-white transition-colors">Nasional Plus</Link></li>
+                <li><Link href="/program" className="hover:text-white transition-colors">Olimpiade</Link></li>
+                <li><Link href="/program" className="hover:text-white transition-colors">UTBK</Link></li>
               </ul>
             </div>
 

@@ -20,7 +20,7 @@ import {
 const programs = [
   {
     id: 'reguler',
-    name: 'Program Reguler',
+    name: 'Reguler',
     category: 'reguler',
     description: 'Program les privat standar untuk meningkatkan pemahaman dan prestasi akademik siswa',
     price: 150000,
@@ -56,7 +56,7 @@ const programs = [
   },
   {
     id: 'olimpiade',
-    name: 'Preparasi Olimpiade',
+    name: 'Olimpiade',
     category: 'olimpiade',
     description: 'Program khusus untuk mempersiapkan siswa mengikuti kompetisi olimpiade sains dan matematika',
     price: 250000,
@@ -74,7 +74,7 @@ const programs = [
   },
   {
     id: 'utbk',
-    name: 'Preparasi UTBK',
+    name: 'UTBK',
     category: 'utbk',
     description: 'Program intensif untuk mempersiapkan siswa menghadapi UTBK/SNBT masuk perguruan tinggi',
     price: 225000,
@@ -128,7 +128,7 @@ const programs = [
   },
   {
     id: 'cpns',
-    name: 'Preparasi CPNS',
+    name: 'CPNS',
     category: 'cpns',
     description: 'Program lengkap untuk mempersiapkan tes CPNS dan seleksi penerimaan pegawai negeri',
     price: 225000,
