@@ -2,12 +2,28 @@
 
 import { NextRequest, NextResponse } from 'next/server'
 import prisma from '@/lib/prisma'
+import { writeFile, mkdir } from 'fs/promises' // Modul untuk menulis file dan membuat folder
+import { join } from 'path' // Modul untuk menggabungkan path dengan aman
 
+// --- FUNGSI GET (TIDAK BERUBAH) ---
 export async function GET() {
   try {
     const karirApplications = await prisma.karir.findMany({
       orderBy: {
         createdAt: 'desc'
+      },
+      select: {
+        id: true,
+        name: true,
+        email: true,
+        phone: true,
+        position: true,
+        experience: true,
+        education: true,
+        message: true,
+        resume: true,
+        createdAt: true,
+        updatedAt: true,
       }
     })
 
@@ -21,6 +37,7 @@ export async function GET() {
   }
 }
 
+// --- FUNGSI POST (DIPERBAIKI - MENANGANI FILE) ---
 export async function POST(request: NextRequest) {
   try {
     const formData = await request.formData()
@@ -33,7 +50,7 @@ export async function POST(request: NextRequest) {
     const experience = formData.get('experience') as string
     const education = formData.get('education') as string
     const message = formData.get('message') as string
-    const resume = formData.get('resume') as File | null // Bisa null
+    const resume = formData.get('resume') as File | null
     
     // Validate required fields
     if (!name || !email || !phone || !position) {
@@ -43,18 +60,43 @@ export async function POST(request: NextRequest) {
       )
     }
     
-    // Handle resume file
     let resumeUrl = '';
+
+    // --- AWAL: LOGIKA PENYIMPANAN FILE ---
     if (resume && resume.size > 0) {
-      // CATATAN: Ini adalah implementasi dasar.
-      // Pada aplikasi nyata, Anda harus mengupload file ke layanan penyimpanan
-      // seperti Vercel Blob, Cloudinary, AWS S3, dll.
-      // Lalu simpan URL-nya ke database.
-      // Contoh: resumeUrl = await uploadFile(resume);
-      resumeUrl = `/uploads/cv/${Date.now()}-${resume.name}`;
+      // 1. Tentukan direktori tempat menyimpan file
+      // `process.cwd()` memberikan path root proyek Anda
+      const uploadDir = join(process.cwd(), 'public', 'uploads', 'cv');
+
+      // 2. Buat direktori jika belum ada
+      // `recursive: true` akan membuat folder 'uploads' dan 'cv' jika keduanya tidak ada
+      try {
+        await mkdir(uploadDir, { recursive: true });
+      } catch (err) {
+        console.error("Gagal membuat direktori upload:", err);
+        return NextResponse.json({ error: "Gagal menyiapkan penyimpanan file." }, { status: 500 });
+      }
+
+      // 3. Buat nama file yang unik untuk menghindari tumpang tindih
+      const uniqueFilename = `${Date.now()}-${resume.name}`;
+
+      // 4. Konversi file (File object) menjadi Buffer
+      const bytes = await resume.arrayBuffer();
+      const buffer = Buffer.from(bytes);
+
+      // 5. Tulis buffer ke file sistem
+      const filePath = join(uploadDir, uniqueFilename);
+      await writeFile(filePath, buffer);
+
+      // 6. Buat URL yang akan disimpan di database
+      // URL ini relatif terhadap folder 'public'
+      resumeUrl = `/uploads/cv/${uniqueFilename}`;
+      
+      console.log(`✅ File CV berhasil disimpan di: ${filePath}`);
     }
+    // --- AKHIR: LOGIKA PENYIMPANAN FILE ---
     
-    // Create career application langsung ke database
+    // Create career application di database
     const karir = await prisma.karir.create({
       data: {
         name,
@@ -64,13 +106,12 @@ export async function POST(request: NextRequest) {
         experience: experience || null,
         education: education || null,
         message: message || null,
-        resume: resumeUrl || null,
+        resume: resumeUrl || null, // Simpan URL file atau null jika tidak ada
       }
     })
     
     console.log(`✅ Karir application dari ${email} berhasil disimpan dengan ID: ${karir.id}`);
     
-    // KIRIM RESPONSE SUKSES KE CLIENT
     return NextResponse.json(karir, { status: 201 })
 
   } catch (error) {

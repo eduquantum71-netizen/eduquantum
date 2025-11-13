@@ -3,12 +3,37 @@
 import { NextRequest, NextResponse } from 'next/server'
 import prisma from '@/lib/prisma'
 
+// --- FUNGSI GET (DIPERBAIKI - SEMUA KOLOM TERURUT) ---
 export async function GET() {
   try {
-    // Tidak perlu `include` lagi karena tidak ada relasi
     const pendaftarans = await prisma.pendaftaran.findMany({
+      // 1. Urutkan baris data berdasarkan yang terbaru dibuat
       orderBy: {
         createdAt: 'desc'
+      },
+      // 2. Pilih SEMUA kolom dan tentukan urutannya
+      // Ini memastikan struktur JSON response selalu konsisten dan terurut.
+      select: {
+        id: true,
+        // Data Siswa
+        namaLengkap: true,
+        namaPanggilan: true,
+        jenisKelamin: true,
+        // Data Sekolah
+        asalSekolah: true,
+        kelas: true,
+        kurikulum: true,
+        // Data Kontak
+        noHpOrangTua: true,
+        noHpSiswa: true,
+        // Detail Program
+        programNama: true,
+        mataPelajaran: true,
+        jumlahSesi: true,
+        // Status dan Timestamp
+        status: true,
+        createdAt: true,
+        updatedAt: true,
       }
     })
 
@@ -22,6 +47,7 @@ export async function GET() {
   }
 }
 
+// --- FUNGSI POST (TIDAK ADA PERUBAHAN) ---
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json()
@@ -36,13 +62,12 @@ export async function POST(request: NextRequest) {
       kurikulum,
       noHpOrangTua,
       noHpSiswa,
-      // Kita menerima NAMA program langsung dari frontend
       programNama,
       mataPelajaran,
       jumlahSesi
     } = body
 
-    // Validasi field yang diperlukan, termasuk programNama
+    // Validasi input
     if (!namaPanggilan || !namaLengkap || !jenisKelamin || !asalSekolah || 
         !kelas || !kurikulum || !noHpOrangTua || !programNama || 
         !mataPelajaran || !jumlahSesi) {
@@ -53,7 +78,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Simpan data pendaftaran baru ke database
-    const pendaftaran = await prisma.pendaftaran.create({
+    const newPendaftaran = await prisma.pendaftaran.create({
       data: {
         namaPanggilan,
         namaLengkap,
@@ -63,17 +88,17 @@ export async function POST(request: NextRequest) {
         kurikulum,
         noHpOrangTua,
         noHpSiswa: noHpSiswa || null,
-        // Simpan nama program langsung ke field programNama
         programNama: programNama,
         mataPelajaran: Array.isArray(mataPelajaran) ? mataPelajaran.join(', ') : mataPelajaran,
         jumlahSesi: parseInt(jumlahSesi),
         status: 'pending'
       }
-      // Tidak perlu `include` lagi
     });
 
-    console.log(`✅ Data pendaftaran berhasil disimpan dengan ID: ${pendaftaran.id}`);
-    return NextResponse.json(pendaftaran, { status: 201 })
+    console.log(`✅ Data pendaftaran berhasil disimpan dengan ID: ${newPendaftaran.id}`);
+    
+    // Kembalikan data yang baru dibuat dengan status 201 (Created)
+    return NextResponse.json(newPendaftaran, { status: 201 })
 
   } catch (error) {
     console.error('❌ Error creating pendaftaran:', error)
