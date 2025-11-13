@@ -1,15 +1,14 @@
 // File: prisma/schema.prisma
 
-// Ini adalah contoh model. Sesuaikan dengan model Anda.
 generator client {
   provider = "prisma-client-js"
- 
 }
 
 datasource db {
-  provider = "postgresql" // PASTIKAN INI ADALAH "postgresql"
+  provider = "postgresql"
   url      = env("DATABASE_URL")
 }
+
 // --- Model untuk Data Pendaftaran Siswa Baru ---
 model Pendaftaran {
   id                   String @id @default(cuid())
@@ -21,29 +20,30 @@ model Pendaftaran {
   kurikulum            String
   noHpOrangTua         String
   noHpSiswa            String?
-  programId            String
+  
+  // --- PERUBAHAN DI SINI ---
+  // Field `programId` dan relasi `program` dihapus.
+  // Diganti dengan field string biasa untuk menyimpan nama program.
+  programNama          String
+
   mataPelajaran        String
   jumlahSesi           Int
   status               String @default("pending")
   createdAt            DateTime @default(now())
   updatedAt            DateTime @updatedAt
-  
-
 }
 
 // --- Model untuk Lamaran Karir ---
 model Karir {
   id         String   @id @default(cuid())
   name       String
-  email      String
+  email      String   @unique
   phone      String
   position   String
   experience String?
   education  String?
   message    String?
-  resume     String? // Path atau URL file CV
-  userId     String?  // Foreign key ke tabel User (opsional)
+  resume     String?
   createdAt  DateTime @default(now())
   updatedAt  DateTime @updatedAt
-  
 }

@@ -51,7 +51,9 @@ export default function DaftarPage() {
   const [isMenuOpen, setIsMenuOpen] = useState(false)
   const [currentStep, setCurrentStep] = useState(1)
   const [isSubmitting, setIsSubmitting] = useState(false)
-  const [selectedSubjects, setSelectedSubjects] = useState<string[]>([])
+  
+  // --- PERUBAHAN: Hapus state selectedSubjects karena sudah redundan ---
+  // const [selectedSubjects, setSelectedSubjects] = useState<string[]>([])
   
   const [formData, setFormData] = useState({
     // Data Siswa
@@ -67,8 +69,8 @@ export default function DaftarPage() {
     noHpSiswa: '',
     
     // Paket Belajar
-    programId: '',
-    mataPelajaran: [] as string[],
+    programId: '', // Ini tetap ID untuk keperluan form
+    mataPelajaran: [] as string[], // Akan diubah jadi string saat submit
     jumlahSesi: 8,
     
     // Additional
@@ -84,19 +86,19 @@ export default function DaftarPage() {
     }))
   }
 
+  // --- PERUBAHAN: Sederhanakan fungsi handleSubjectToggle ---
   const handleSubjectToggle = (subject: string) => {
-    setSelectedSubjects(prev => 
-      prev.includes(subject) 
-        ? prev.filter(s => s !== subject)
-        : [...prev, subject]
-    )
-    setFormData(prev => ({
-      ...prev,
-      mataPelajaran: selectedSubjects.includes(subject) 
-        ? prev.mataPelajaran.filter(s => s !== subject)
-        : [...prev.mataPelajaran, subject]
-    }))
-  }
+    setFormData(prev => {
+      const currentSubjects = prev.mataPelajaran;
+      const isSelected = currentSubjects.includes(subject);
+      return {
+        ...prev,
+        mataPelajaran: isSelected
+          ? currentSubjects.filter(s => s !== subject)
+          : [...currentSubjects, subject]
+      };
+    });
+  };
 
   // === FUNGSI YANG DIPERBAIKI DAN DITAMBAHKAN VALIDASI ===
   const handleSubmit = async (e: React.FormEvent) => {
@@ -104,31 +106,43 @@ export default function DaftarPage() {
     setIsSubmitting(true)
     
     try {
-      // --- TAMBAHKAN VALIDASI CLIENT-SIDE ---
-      // Cek apakah ada mata pelajaran yang dipilih
+      // --- Validasi Client-Side ---
       if (formData.mataPelajaran.length === 0) {
         alert('Anda harus memilih minimal satu mata pelajaran.');
         setIsSubmitting(false);
-        return; // Hentikan proses pengiriman
+        return;
       }
-      // --- AKHIR VALIDASI ---
+      if (!formData.setujuSyarat) {
+        alert('Anda harus menyetujui syarat dan ketentuan.');
+        setIsSubmitting(false);
+        return;
+      }
 
-      // Siapkan data yang akan dikirim ke API
+      // --- PERUBAHAN: Siapkan data yang akan dikirim ke API ---
+      const selectedProgram = programs.find(p => p.id === formData.programId);
       const dataToSubmit = {
-        ...formData,
-        // Pastikan mataPelajaran adalah string yang dipisah koma
-        mataPelajaran: formData.mataPelajaran.join(', ')
+        namaPanggilan: formData.namaPanggilan,
+        namaLengkap: formData.namaLengkap,
+        jenisKelamin: formData.jenisKelamin,
+        asalSekolah: formData.asalSekolah,
+        kelas: formData.kelas,
+        kurikulum: formData.kurikulum,
+        noHpOrangTua: formData.noHpOrangTua,
+        noHpSiswa: formData.noHpSiswa || null,
+        // --- KUNCI: Kirim programNama (string) bukan programId ---
+        programNama: selectedProgram ? selectedProgram.name : '',
+        // --- KUNCI: Ubah array mataPelajaran jadi string dengan koma ---
+        mataPelajaran: formData.mataPelajaran.join(', '),
+        // --- KUNCI: Pastikan jumlahSesi adalah angka ---
+        jumlahSesi: parseInt(formData.jumlahSesi.toString()),
+        pesanTambahan: formData.pesanTambahan || null,
       };
 
-      // --- TAMBAHKAN LOG DEBUGGING ---
-      // Cetak data yang akan dikirim ke console browser
       console.log('📤 DATA YANG AKAN DIKIRIM KE API:', dataToSubmit);
 
       const response = await fetch('/api/pendaftaran', {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(dataToSubmit),
       });
 
@@ -139,28 +153,16 @@ export default function DaftarPage() {
 
       const result = await response.json();
       console.log('Sukses:', result);
-
-      // Tampilkan pesan sukses
-      alert('Pendaftaran berhasil! Tim kami akan segera menghubungi Anda untuk konfirmasi lebih lanjut.');
+      alert('Pendaftaran berhasil! Tim kami akan segera menghubungi Anda.');
       
       // Reset form
       setCurrentStep(1)
       setFormData({
-        namaPanggilan: '',
-        namaLengkap: '',
-        jenisKelamin: '',
-        asalSekolah: '',
-        kelas: '',
-        kurikulum: '',
-        noHpOrangTua: '',
-        noHpSiswa: '',
-        programId: '',
-        mataPelajaran: [],
-        jumlahSesi: 8,
-        pesanTambahan: '',
-        setujuSyarat: false
+        namaPanggilan: '', namaLengkap: '', jenisKelamin: '', asalSekolah: '',
+        kelas: '', kurikulum: '', noHpOrangTua: '', noHpSiswa: '',
+        programId: '', mataPelajaran: [], jumlahSesi: 8,
+        pesanTambahan: '', setujuSyarat: false
       })
-      setSelectedSubjects([])
 
     } catch (error: any) {
       console.error('Error submitting form:', error);
@@ -517,7 +519,8 @@ export default function DaftarPage() {
                           <input
                             type="checkbox"
                             id={subject}
-                            checked={selectedSubjects.includes(subject)}
+                            // --- PERUBAHAN: Gunakan formData.mataPelajaran langsung ---
+                            checked={formData.mataPelajaran.includes(subject)}
                             onChange={() => handleSubjectToggle(subject)}
                             className="sr-only peer"
                           />
@@ -660,7 +663,8 @@ export default function DaftarPage() {
                         <div>
                           <span className="font-medium text-gray-700">Mata Pelajaran:</span>
                           <div className="flex flex-wrap gap-2 mt-2">
-                            {selectedSubjects.map((subject) => (
+                            {/* --- PERUBAHAN: Gunakan formData.mataPelajaran langsung --- */}
+                            {formData.mataPelajaran.map((subject) => (
                               <Badge key={subject} variant="secondary">
                                 {subject}
                               </Badge>

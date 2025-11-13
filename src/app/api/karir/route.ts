@@ -1,6 +1,7 @@
+// File: src/app/api/karir/route.ts
+
 import { NextRequest, NextResponse } from 'next/server'
 import prisma from '@/lib/prisma'
-
 
 export async function GET() {
   try {
@@ -32,46 +33,28 @@ export async function POST(request: NextRequest) {
     const experience = formData.get('experience') as string
     const education = formData.get('education') as string
     const message = formData.get('message') as string
-    const resume = formData.get('resume') as File
+    const resume = formData.get('resume') as File | null // Bisa null
     
     // Validate required fields
     if (!name || !email || !phone || !position) {
       return NextResponse.json(
-        { error: 'Missing required fields' },
+        { error: 'Missing required fields: name, email, phone, or position' },
         { status: 400 }
       )
     }
     
-    // Check if user already exists
-    const existingUser = await prisma.user.findUnique({
-      where: { email }
-    })
-    
-    let userId;
-    
-    if (existingUser) {
-      userId = existingUser.id
-    } else {
-      // Create new user
-      const newUser = await prisma.user.create({
-        data: {
-          email,
-          name,
-          phone
-        }
-      })
-      userId = newUser.id
-    }
-    
     // Handle resume file
     let resumeUrl = '';
-    if (resume) {
-      // In a real implementation, you would upload the file to a storage service
-      // For now, we'll just store the filename
-      resumeUrl = `/uploads/${resume.name}`
+    if (resume && resume.size > 0) {
+      // CATATAN: Ini adalah implementasi dasar.
+      // Pada aplikasi nyata, Anda harus mengupload file ke layanan penyimpanan
+      // seperti Vercel Blob, Cloudinary, AWS S3, dll.
+      // Lalu simpan URL-nya ke database.
+      // Contoh: resumeUrl = await uploadFile(resume);
+      resumeUrl = `/uploads/cv/${Date.now()}-${resume.name}`;
     }
     
-    // Create career application
+    // Create career application langsung ke database
     const karir = await prisma.karir.create({
       data: {
         name,
@@ -81,32 +64,25 @@ export async function POST(request: NextRequest) {
         experience: experience || null,
         education: education || null,
         message: message || null,
-        resume: resumeUrl,
-        userId
+        resume: resumeUrl || null,
       }
     })
     
-    // Also save to Google Sheets
-    try {
-      await googleSheetsService.appendKarirData({
-        name,
-        email,
-        phone,
-        position,
-        experience: experience || '',
-        education: education || '',
-        message: message || '',
-        resume: resumeUrl,
-        createdAt: new Date().toISOString()
-      })
-    } catch (sheetsError) {
-      console.error('Error saving to Google Sheets:', sheetsError)
-      // Continue even if Google Sheets fails
-    }
+    console.log(`✅ Karir application dari ${email} berhasil disimpan dengan ID: ${karir.id}`);
     
+    // KIRIM RESPONSE SUKSES KE CLIENT
     return NextResponse.json(karir, { status: 201 })
+
   } catch (error) {
-    console.error('Error creating karir application:', error)
+    // Tangani error jika email sudah ada (karena @unique)
+    if (error instanceof Error && error.message.includes('Unique constraint')) {
+      return NextResponse.json(
+        { error: 'An application with this email already exists.' },
+        { status: 409 } // 409 Conflict
+      )
+    }
+
+    console.error('❌ Error creating karir application:', error)
     return NextResponse.json(
       { error: 'Failed to create karir application' },
       { status: 500 }
