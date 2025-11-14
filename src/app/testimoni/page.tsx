@@ -184,9 +184,11 @@ export default function TestimoniPage() {
               <Link href="/testimoni" className="text-blue-600 font-semibold">Testimoni</Link>
               <Link href="/kontak" className="text-gray-700 hover:text-blue-600 transition-colors">Kontak</Link>
               <Link href="/karir" className="text-gray-700 hover:text-blue-600 transition-colors">Karir</Link>
-              <Button className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700">
-                Daftar Sekarang
-              </Button>
+              <Link href="/daftar" passHref>
+                <Button className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700">
+                  Daftar Sekarang
+                </Button>
+              </Link>
             </div>
 
             <button 
