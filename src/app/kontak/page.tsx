@@ -366,10 +366,14 @@ export default function KontakPage() {
                   <p className="text-blue-100">
                     Hubungi kami langsung melalui WhatsApp untuk respons lebih cepat
                   </p>
-                  <Button variant="secondary" className="w-full bg-white text-blue-600 hover:bg-gray-100">
-                    <Phone className="mr-2 w-4 h-4" />
-                    WhatsApp Sekarang
-                  </Button>
+                  <Button 
+  variant="secondary" 
+  className="w-full bg-white text-blue-600 hover:bg-gray-100"
+  onClick={() => window.open('https://wa.me/62812345678', '_blank')}
+>
+  <Phone className="mr-2 w-4 h-4" />
+  WhatsApp Sekarang
+</Button>
                 </CardContent>
               </Card>
             </div>
